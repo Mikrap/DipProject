@@ -1,0 +1,77 @@
+﻿<Page x:Class="DiplomV3.Pages.DbConnectionPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="DbConnectionPage"
+      Background="{DynamicResource PrimaryBackgroundColor}">
+
+    <Page.Resources>
+        <!-- Включаем стиль кнопок из MainWindow -->
+        <Style x:Key="AuthButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource ButtonBackgroundColor}"/>
+            <Setter Property="Foreground" Value="{DynamicResource ButtonForegroundColor}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Width" Value="250"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="10,0,0,0"/>
+            <Setter Property="Padding" Value="5"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                       BorderBrush="{TemplateBinding BorderBrush}"
+                       BorderThickness="{TemplateBinding BorderThickness}"
+                       CornerRadius="10"
+                       Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
+
+    <Grid Margin="40">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Подключение к Базе Данных" FontSize="18" FontWeight="Bold"
+                   Foreground="{DynamicResource PrimaryForegroundColor}" 
+                   HorizontalAlignment="Center" Margin="0,0,0,20"/>
+
+        <StackPanel Grid.Row="1" Margin="0,10,0,0">
+            <TextBlock Text="Адрес сервера:" Foreground="{DynamicResource PrimaryForegroundColor}" />
+            <TextBox x:Name="TxtServer" Width="250" Height="30" Margin="0,5,0,15" 
+                     Foreground="{DynamicResource PrimaryForegroundColor}" 
+                     Text="{Binding ServerAddress}"/>
+
+            <TextBlock Text="Логин:" Foreground="{DynamicResource PrimaryForegroundColor}" />
+            <TextBox x:Name="TxtDbLogin" Width="250" Height="30" Margin="0,5,0,15" 
+                     Foreground="{DynamicResource PrimaryForegroundColor}" 
+                     Text="{Binding DbLogin}"/>
+
+            <TextBlock Text="Пароль:" Foreground="{DynamicResource PrimaryForegroundColor}" />
+            <PasswordBox x:Name="TxtDbPassword" Width="250" Height="30" Margin="0,5,0,20" 
+                         Foreground="{DynamicResource PrimaryForegroundColor}" />
+
+            <!-- Кнопка Подключиться с использованием AuthButtonStyle -->
+            <Button Content="Подключиться" Width="150" Height="35" 
+                    HorizontalAlignment="Center" Click="ConnectToDb_Click"
+                    Style="{StaticResource AuthButtonStyle}"/>
+
+            <!-- Кнопка Назад с использованием AuthButtonStyle -->
+            <Button Content="Назад" Width="150" Height="35" HorizontalAlignment="Center" 
+                    Click="BackButton_Click" Margin="10,10,0,020" 
+                    Style="{StaticResource AuthButtonStyle}"/>
+        </StackPanel>
+    </Grid>
+</Page>
