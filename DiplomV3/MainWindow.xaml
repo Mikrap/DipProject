@@ -111,7 +111,7 @@
         <Grid Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,10,0,10">
             <Button Name="BtnLogin" Content="Войти" Style="{StaticResource AuthButtonStyle}" 
                     Click="BtnLogin_Click" Margin="5,0,0,50"/>
-            <Button Name="BtnConnect" Content="Подключиться к БД" Style="{StaticResource AuthButtonStyle}" 
+            <Button Name="BtnConnect" Content="Вести ключ" Style="{StaticResource AuthButtonStyle}" 
                     Margin="5,50,0,0" Click="BtnConnect_Click"/>
         </Grid>
 
