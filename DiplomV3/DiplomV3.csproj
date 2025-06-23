@@ -252,11 +252,27 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Pages\CommandPages\AddRecordWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Pages\CommandPages\AddUserTableAccessWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Pages\CommandPages\CreateTablePage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Pages\CommandPages\EditRecordPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Pages\CommandPages\EditRecordWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Pages\CommandPages\EditUserTableAccessWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -299,14 +315,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Pages\CommandPages\AddUserWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Pages\CommandPages\EditUserWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Pages\UserPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -322,8 +330,11 @@
     <Compile Include="Pages\CommandPages\AddRecordPage.xaml.cs">
       <DependentUpon>AddRecordPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Pages\CommandPages\AddUserWindow.xaml.cs">
-      <DependentUpon>AddUserWindow.xaml</DependentUpon>
+    <Compile Include="Pages\CommandPages\AddRecordWindow.xaml.cs">
+      <DependentUpon>AddRecordWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\CommandPages\AddUserTableAccessWindow.xaml.cs">
+      <DependentUpon>AddUserTableAccessWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\CommandPages\ColumnDefinition.cs" />
     <Compile Include="Pages\CommandPages\CreateTablePage.xaml.cs">
@@ -332,10 +343,13 @@
     <Compile Include="Pages\CommandPages\EditRecordPage.xaml.cs">
       <DependentUpon>EditRecordPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Pages\CommandPages\EditUserWindow.xaml.cs">
-      <DependentUpon>EditUserWindow.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Pages\CommandPages\Converters\NullToBoolConverter.cs" />
+    <Compile Include="Pages\CommandPages\EditRecordWindow.xaml.cs">
+      <DependentUpon>EditRecordWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\CommandPages\EditUserTableAccessWindow.xaml.cs">
+      <DependentUpon>EditUserTableAccessWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Pages\DataTemplateFactory.cs" />
     <Compile Include="Pages\DbConnectionPage.xaml.cs">
       <DependentUpon>DbConnectionPage.xaml</DependentUpon>

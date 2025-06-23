@@ -19,16 +19,11 @@
                 <Button Content="➕ Создать таблицу" Click="BtnCreateTable_Click" Style="{StaticResource GitHubButtonStyle}" Margin="10,0,0,0"/>
                 <Button Content="📄 Каталог" Click="GoToMainPage" Style="{StaticResource GitHubButtonStyle}"/>
                 <Button Content="🗑 Удалить таблицу" Click="BtnDeleteTable_Click" 
-        Style="{StaticResource GitHubButtonStyle}" Margin="10,0,0,0"/>
+                        Style="{StaticResource GitHubButtonStyle}" Margin="10,0,0,0"/>
 
-                <!-- Кнопки, которые скрыты до выбора таблицы -->
-                <Button x:Name="BtnAddUser" Content="➕ Добавить" Click="BtnAddUser_Click" Style="{StaticResource GitHubButtonStyle}" 
-                        Margin="10,0,0,0" Visibility="Collapsed"/>
-                <Button x:Name="BtnEditUser" Content="✏ Редактировать" Click="BtnEditUser_Click" Style="{StaticResource GitHubButtonStyle}" 
-                        Margin="10,0,0,0" Visibility="Collapsed"/>
-                <Button x:Name="BtnDeleteUser" Content="🗑 Удалить" Click="BtnDeleteUser_Click" Style="{StaticResource GitHubButtonStyle}" 
-                        Margin="10,0,0,0" Visibility="Collapsed"/>
-                <Button Content="🔄 Обновить" Click="BtnRefresh_Click" Style="{StaticResource GitHubButtonStyle}" Margin="10,0,5,0" Cursor="Hand"/>
+                <!-- В панель инструментов добавьте кнопки -->
+                <Button Content="➕ Добавить" Click="AddNewRow_Click" Style="{StaticResource GitHubButtonStyle}" Margin="10,0,0,0"/>
+                <Button Content="✏️ Редактировать" Click="EditSelectedRow_Click" Style="{StaticResource GitHubButtonStyle}" Margin="10,0,0,0"/>
             </StackPanel>
 
             <!-- Поисковая строка (скрыта до выбора таблицы) -->
@@ -44,7 +39,7 @@
         <!-- Кнопка смены темы -->
         <Button Content="Выход" Click="Exit" Style="{StaticResource GitHubButtonStyle}" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="15,15,60,0"/>
         <Button x:Name="ThemeSwitchButton" Click="SwitchTheme_Click" Style="{StaticResource GitHubButtonStyle}" 
-        HorizontalAlignment="Right" VerticalAlignment="Top" Margin="15" Width="35" Height="30">
+                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="15" Width="35" Height="30">
             <Button.Content>
                 <TextBlock x:Name="ThemeIcon" Text="🌞" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Button.Content>
@@ -72,52 +67,34 @@
                            Foreground="{DynamicResource PrimaryForegroundColor}"/>
 
                 <!-- Панель иконок таблиц -->
-                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Visibility="{Binding ElementName=TableIconsPanel, Path=Visibility}">
                     <WrapPanel x:Name="TableIconsPanel" Margin="0,10,0,0" />
                 </ScrollViewer>
 
-                <!-- Панель с таблицей пользователей (сначала скрыта) -->
-                <DataGrid x:Name="UserDataGrid" Visibility="Collapsed" Margin="10,40,10,40" 
-          AutoGenerateColumns="True" 
-          CanUserAddRows="False" 
-          IsReadOnly="True">
-                    <DataGrid.Columns>
-                        <!-- Кнопка "Добавить" только в заголовке -->
-                        <DataGridTemplateColumn Header="➕" Width="70"  >
-                            <DataGridTemplateColumn.HeaderTemplate>
-                                <DataTemplate>
-                                    <Button Content="➕" ToolTip="Добавить пользователя"  Click="AddNewRow_Click"
-                    Style="{StaticResource GitHubButtonStyle}" Width="35" Height="35" FontSize="10"/>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.HeaderTemplate>
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <!-- Пусто -->
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
+                <!-- Панель с таблицей данных -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" 
+                              Visibility="{Binding ElementName=UserDataGrid, Path=Visibility}">
+                    <DataGrid x:Name="UserDataGrid" Visibility="Collapsed" Margin="10,40,10,40" 
+                              AutoGenerateColumns="True" 
+                              CanUserAddRows="False" 
+                              IsReadOnly="True">
+                        <DataGrid.Columns>
+                          
 
-                        <!-- Кнопка редактирования -->
-                        <DataGridTemplateColumn Header="✏" Width="50">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Button Content="✏" ToolTip="Редактировать" Click="EditRow_Click"
-                        Style="{StaticResource GitHubButtonStyle}" Tag="{Binding}" />
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
+                           
 
-                        <!-- Кнопка удаления -->
-                        <DataGridTemplateColumn Header="🗑" Width="50">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Button Content="🗑" ToolTip="Удалить" Click="DeleteRow_Click"
-                        Style="{StaticResource GitHubButtonStyle}" Tag="{Binding}" />
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                    </DataGrid.Columns>
-                </DataGrid>
+                            <!-- Кнопка удаления -->
+                            <DataGridTemplateColumn Header="🗑" Width="50">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Content="🗑" ToolTip="Удалить" Click="DeleteRow_Click"
+                                                Style="{StaticResource GitHubButtonStyle}" Tag="{Binding}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </ScrollViewer>
             </Grid>
 
             <!-- Слайд-меню (в правой колонке) -->

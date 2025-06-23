@@ -6,6 +6,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using DiplomV3.Properties;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace DiplomV3.Pages
 {
@@ -40,17 +42,11 @@ namespace DiplomV3.Pages
 
         private void HideTableControls()
         {
-            BtnAddUser.Visibility = Visibility.Collapsed;
-            BtnEditUser.Visibility = Visibility.Collapsed;
-            BtnDeleteUser.Visibility = Visibility.Collapsed;
             SearchPanel.Visibility = Visibility.Collapsed;
         }
 
         private void ShowTableControls()
         {
-            BtnAddUser.Visibility = Visibility.Visible;
-            BtnEditUser.Visibility = Visibility.Visible;
-            BtnDeleteUser.Visibility = Visibility.Visible;
             SearchPanel.Visibility = Visibility.Visible;
         }
 
@@ -129,11 +125,57 @@ namespace DiplomV3.Pages
                 LoadTableData(tableName);
             }
         }
+
         public string GetSelectedTable()
         {
             return selectedTableName;
         }
-        private void LoadTableData(string tableName)
+
+        private void AddNewRow_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(selectedTableName))
+            {
+                MessageBox.Show("Сначала выберите таблицу.");
+                return;
+            }
+
+            if (selectedTableName.Equals("user_table_access", StringComparison.OrdinalIgnoreCase))
+            {
+                OpenSlideMenu(new AddUserTableAccessWindow(this));
+            }
+            else
+            {
+                OpenSlideMenu(new AddRecordWindow(this, selectedTableName));
+            }
+        }
+
+        private void EditSelectedRow_Click(object sender, RoutedEventArgs e)
+        {
+            if (UserDataGrid.SelectedItem == null)
+            {
+                MessageBox.Show("Выберите запись для редактирования.");
+                return;
+            }
+
+            var row = (DataRowView)UserDataGrid.SelectedItem;
+
+            if (selectedTableName.Equals("user_table_access", StringComparison.OrdinalIgnoreCase))
+            {
+                try
+                {
+                    int userId = Convert.ToInt32(row["user_id"]);
+                    string tableName = row["table_name"].ToString();
+                    OpenSlideMenu(new EditUserTableAccessWindow(this, userId, tableName));
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Ошибка при редактировании записи: {ex.Message}");
+                }
+                return;
+            }
+        }
+
+        public void LoadTableData(string tableName)
         {
             try
             {
@@ -146,7 +188,6 @@ namespace DiplomV3.Pages
                     DataTable dt = new DataTable();
                     adapter.Fill(dt);
 
-                    // Здесь обращаемся к UserDataGrid, чтобы загрузить данные
                     UserDataGrid.ItemsSource = dt.DefaultView;
                     TableNameTextBlock.Text = $"Таблица: {tableName}";
                 }
@@ -154,6 +195,115 @@ namespace DiplomV3.Pages
             catch (Exception ex)
             {
                 MessageBox.Show("Ошибка при загрузке данных: " + ex.Message);
+            }
+        }
+
+        private List<string> GetPrimaryKeyColumns(string tableName)
+        {
+            var primaryKeys = new List<string>();
+
+            using (var conn = new MySqlConnection(connString))
+            {
+                conn.Open();
+                string query = $@"
+                    SELECT COLUMN_NAME
+                    FROM INFORMATION_SCHEMA.COLUMNS
+                    WHERE TABLE_SCHEMA = DATABASE()
+                    AND TABLE_NAME = @tableName
+                    AND COLUMN_KEY = 'PRI'";
+
+                using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@tableName", tableName);
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            primaryKeys.Add(reader["COLUMN_NAME"].ToString());
+                        }
+                    }
+                }
+            }
+
+            return primaryKeys;
+        }
+
+        private void DeleteRow_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is DataRowView row)
+            {
+                string selectedTable = GetSelectedTable();
+
+                // Особый случай для user_table_access
+                if (selectedTable.Equals("user_table_access", StringComparison.OrdinalIgnoreCase))
+                {
+                    try
+                    {
+                        int userId = Convert.ToInt32(row["user_id"]);
+                        string tableName = row["table_name"].ToString();
+
+                        var result = MessageBox.Show("Вы уверены, что хотите удалить эту запись?", "Подтверждение", MessageBoxButton.YesNo);
+                        if (result != MessageBoxResult.Yes) return;
+
+                        using (MySqlConnection conn = new MySqlConnection(connString))
+                        {
+                            conn.Open();
+                            string query = $"DELETE FROM `{selectedTable}` WHERE `user_id` = @userId AND `table_name` = @tableName";
+                            MySqlCommand cmd = new MySqlCommand(query, conn);
+                            cmd.Parameters.AddWithValue("@userId", userId);
+                            cmd.Parameters.AddWithValue("@tableName", tableName);
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        LoadTableData(selectedTable);
+                        return;
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Ошибка удаления: " + ex.Message);
+                        return;
+                    }
+                }
+
+                // Стандартная обработка для других таблиц
+                var primaryKeys = GetPrimaryKeyColumns(selectedTable);
+                string primaryKey = primaryKeys.FirstOrDefault() ?? "id";
+
+                if (!row.Row.Table.Columns.Contains(primaryKey))
+                {
+                    MessageBox.Show($"Столбец '{primaryKey}' не найден.");
+                    return;
+                }
+
+                try
+                {
+                    var idValue = row[primaryKey];
+                    var result = MessageBox.Show("Вы уверены, что хотите удалить эту запись?", "Подтверждение", MessageBoxButton.YesNo);
+                    if (result != MessageBoxResult.Yes) return;
+
+                    using (MySqlConnection conn = new MySqlConnection(connString))
+                    {
+                        conn.Open();
+                        string query = $"DELETE FROM `{selectedTable}` WHERE `{primaryKey}` = @id";
+                        MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                        // Обработка разных типов первичных ключей
+                        if (idValue is int)
+                            cmd.Parameters.AddWithValue("@id", (int)idValue);
+                        else if (idValue is string)
+                            cmd.Parameters.AddWithValue("@id", (string)idValue);
+                        else
+                            cmd.Parameters.AddWithValue("@id", idValue.ToString());
+
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    LoadTableData(selectedTable);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Ошибка удаления: " + ex.Message);
+                }
             }
         }
         private void BtnDeleteTable_Click(object sender, RoutedEventArgs e)
@@ -200,116 +350,38 @@ namespace DiplomV3.Pages
                 }
             }
         }
-        private void BtnAddUser_Click(object sender, RoutedEventArgs e)
+       
+
+       
+
+        
+        private string GetPrimaryKeyColumn(string tableName)
         {
-            OpenSlideMenu(new AddUserWindow(this));
-        }
-
-        private void BtnEditUser_Click(object sender, RoutedEventArgs e)
-        {
-            if (UserDataGrid.SelectedItem == null)
+            using (var conn = new MySqlConnection(connString))
             {
-                MessageBox.Show("Выберите пользователя для редактирования.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+                conn.Open();
+                string query = $@"
+            SELECT COLUMN_NAME
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+            AND TABLE_NAME = @tableName
+            AND COLUMN_KEY = 'PRI'
+            LIMIT 1";
 
-            var row = (System.Data.DataRowView)UserDataGrid.SelectedItem;
-            int userId = Convert.ToInt32(row["id"]);
-            
-
-            OpenSlideMenu(new EditUserWindow(this, userId));
-        }
-
-        private void BtnDeleteUser_Click(object sender, RoutedEventArgs e)
-        {
-            if (UserDataGrid.SelectedItem == null)
-            {
-                MessageBox.Show("Выберите запись для удаления.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            var row = (DataRowView)UserDataGrid.SelectedItem;
-            int id = Convert.ToInt32(row["id"]);
-
-            if (!row.Row.Table.Columns.Contains("id"))
-            {
-                MessageBox.Show("Таблица не содержит столбца 'id'.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            string selectedTable = TableNameTextBlock.Text.Replace("Таблица: ", "");
-            using (MySqlConnection conn = new MySqlConnection(connString))
-            {
-                try
+                using (MySqlCommand cmd = new MySqlCommand(query, conn))
                 {
-                    conn.Open();
-                    string query = $"DELETE FROM `{selectedTable}` WHERE id = @id";
-                    MySqlCommand cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@id", id);
-                    cmd.ExecuteNonQuery();
-
-                    MessageBox.Show("Запись удалена.");
-                    LoadTableData(selectedTable);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Ошибка удаления: " + ex.Message);
+                    cmd.Parameters.AddWithValue("@tableName", tableName);
+                    object result = cmd.ExecuteScalar();
+                    return result?.ToString() ?? "id"; // Возвращаем 'id' по умолчанию, если не найден
                 }
             }
         }
 
-        private void EditRow_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button btn && btn.Tag is DataRowView row)
-            {
-                if (!row.Row.Table.Columns.Contains("id"))
-                {
-                    MessageBox.Show("Столбец 'id' не найден.");
-                    return;
-                }
-
-                int userId = Convert.ToInt32(row["id"]);
+       
 
 
-                OpenSlideMenu(new EditUserWindow(this, userId));
-            }
-        }
 
-        private void DeleteRow_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button btn && btn.Tag is DataRowView row)
-            {
-                if (!row.Row.Table.Columns.Contains("id"))
-                {
-                    MessageBox.Show("Столбец 'id' не найден.");
-                    return;
-                }
 
-                int id = Convert.ToInt32(row["id"]);
-                string selectedTable = GetSelectedTable();
-
-                var result = MessageBox.Show("Вы уверены, что хотите удалить эту запись?", "Подтверждение", MessageBoxButton.YesNo);
-                if (result != MessageBoxResult.Yes) return;
-
-                try
-                {
-                    using (MySqlConnection conn = new MySqlConnection(connString))
-                    {
-                        conn.Open();
-                        string query = $"DELETE FROM `{selectedTable}` WHERE id = @id";
-                        MySqlCommand cmd = new MySqlCommand(query, conn);
-                        cmd.Parameters.AddWithValue("@id", id);
-                        cmd.ExecuteNonQuery();
-                    }
-
-                    LoadTableData(selectedTable);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Ошибка удаления: " + ex.Message);
-                }
-            }
-        }
 
         private void BtnRefresh_Click(object sender, RoutedEventArgs e)
         {
@@ -468,11 +540,7 @@ namespace DiplomV3.Pages
             mainWindow.Show(); // Показываем окно MainWindow
         }
 
-        private void AddNewRow_Click(object sender, RoutedEventArgs e)
-        {
-            // Пример: показать панель справа для добавления пользователя
-            OpenSlideMenu(new AddUserWindow(this));
-        }
+       
 
         private void BtnCreateTable_Click(object sender, RoutedEventArgs e)
         {
